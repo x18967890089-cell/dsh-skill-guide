@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate example skills and links
+        run: python tools/check-skills.py
+      - name: Negative control (a broken skill must fail the checker)
+        run: |
+          set -e
+          cp -r examples/hello-skill /tmp/bad-skill
+          sed -i 's/^name:.*/name: renamed-in-frontmatter/' /tmp/bad-skill/SKILL.md
+          mkdir -p examples/_bad
+          cp /tmp/bad-skill/SKILL.md examples/_bad/SKILL.md
+          if python tools/check-skills.py; then
+            echo "::error::checker accepted a skill whose name does not match its directory"
+            exit 1
+          fi
+          rm -rf examples/_bad
+          python tools/check-skills.py
