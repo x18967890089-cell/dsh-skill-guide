@@ -1,5 +1,7 @@
 # dsh-skill-guide
 
+[![ci](https://github.com/x18967890089-cell/dsh-skill-guide/actions/workflows/ci.yml/badge.svg)](https://github.com/x18967890089-cell/dsh-skill-guide/actions/workflows/ci.yml)
+
 给 [DeepSeek Harness](https://github.com/deepseek-ai)（下称 DSH）写技能的最小说明书：一个 `SKILL.md` 放在哪、frontmatter 怎么写、description 为什么决定它会不会被用上。
 
 > A minimal, field-tested guide to authoring DSH skills: where `SKILL.md` lives, which frontmatter keys matter, and why the description is the whole ballgame.
@@ -149,6 +151,19 @@ DSH 的记忆系统会把跑通过的多步流程自动落成技能，目录名�
 - 本仓库只覆盖 `SKILL.md` 这一种形态；插件自带的技能、内置技能不在讨论范围。
 - frontmatter 用 YAML，但只按上面五个字段读取；复杂结构（数组、嵌套）没有对应语义。
 - 技能正文是**给模型读的**，不是给脚本解析的：不要指望它能被程序当成配置。
+
+## 怎么验（本仓库自带的检查）
+
+`tools/check-skills.py` 把上面所有能机器判的规则都判一遍：
+
+```bash
+python tools/check-skills.py
+# ok: 2 skill(s), every link resolves
+```
+
+它检查五件事：`examples/*/SKILL.md` 有 frontmatter 块、frontmatter 是 `key: value` 形态、`name` 与 `description` 都非空、`name` 等于目录名（DSH 就是这么加载的）、README 里所有相对链接指向真实存在的文件。
+
+CI（`.github/workflows/ci.yml`）除了跑它，还有一个**反向对照**：把 `name` 改坏再跑，检查脚本必须失败——只证明"合法的能过"不够，还得证明"坏的过不去"。
 
 ## 许可证
 
